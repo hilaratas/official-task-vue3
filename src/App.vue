@@ -1,5 +1,5 @@
 <template>
-  <div class='page__wrapper'>
+  <div class='page__wrapper' id="app">
     <div class='page__header'>
       <the-header></the-header>
     </div>
