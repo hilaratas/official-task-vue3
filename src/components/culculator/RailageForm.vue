@@ -7,7 +7,7 @@
       <fieldset class="form__fieldset">
         <legend class="title--h5">Выберите тип вагона для перевозки</legend>
         <div class="grid grid--gap-15px">
-          <div v-for="c in carriageConfig" class="grid__col-6">
+          <div v-for="c in carriageConfig" class="grid__col grid__col--auto">
             <railage-carriage :value="c.value" :label="c.label" v-model="railage.carriage" :is-checked="c.default"></railage-carriage>
           </div>
         </div>
