@@ -61,7 +61,7 @@
           <button type="submit" class="button">Рассчитать стоимость перевозки</button>
         </div>
         <div v-if="costStr" class="grid__col">
-          <div class="title title--h5">{{costStr}}</div>
+          <div class="title title--h5" v-html="costStr"></div>
         </div>
       </div>
     </div>
@@ -148,6 +148,8 @@
     const distance = calcDistance(a, b)
     const carriageRatio = tariff.value.carriage[railage.carriage]
     const urgencyRatio = tariff.value.urgency[railage.urgency]
-    costStr.value = `Стоимость перевозки: ${(100 * carriageRatio * urgencyRatio * distance).toFixed(2)} руб.`
+    costStr.value = `
+      Расстояние для перевозки ${distance.toFixed(2)} км <br>
+      Стоимость перевозки: ${(100 * carriageRatio * urgencyRatio * distance).toFixed(2)} руб.`
   }
 </script>
