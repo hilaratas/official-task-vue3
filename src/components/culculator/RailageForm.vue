@@ -1,8 +1,8 @@
 <template>
-  <div v-if="pageLoading">
-    Страница грузиться
-  </div>
-  <form v-else action="#" id="railage" @submit.prevent="onSubmit">
+  <form action="#" id="railage" class="form"
+        :class="{'is-loading': pageLoading}" @submit.prevent="onSubmit"
+        autocomplete="off"
+  >
     <div class="form__row">
       <fieldset class="form__fieldset">
         <legend class="title--h5">Выберите тип вагона для перевозки</legend>
@@ -12,18 +12,20 @@
           </div>
         </div>
       </fieldset>
-      <div v-if="v$.carriage.$errors.length" class="form__row form__row--mt-10px">
+      <div v-if="v$.railage.carriage.$errors.length" class="form__row form__row--mt-10px">
         <small class="control-error">Выберите тип вагона</small>
       </div>
     </div>
     <div class="form__row">
       <fieldset class="form__fieldset">
         <legend class="title--h5">Выберите срочность</legend>
-        <div v-for="u in urgencyConfig">
-          <app-radio :label="u.label" :value="u.value" name="railage-urgency" v-model="railage.urgency" :is-checked="u.default"></app-radio>
+        <div class="form">
+          <div v-for="u in urgencyConfig" class="form__row form__row--mt-10px">
+            <app-radio :label="u.label" :value="u.value" name="railage-urgency" v-model="railage.urgency" :is-checked="u.default"></app-radio>
+          </div>
         </div>
       </fieldset>
-      <div v-if="v$.urgency.$errors.length" class="form__row form__row--mt-10px">
+      <div v-if="v$.railage.urgency.$errors.length" class="form__row form__row--mt-10px">
         <small class="control-error">Выберите срочность</small>
       </div>
     </div>
@@ -32,38 +34,36 @@
         <legend class="title--h5">Выберите пункт отгрузки</legend>
         <div class="grid">
           <div class="grid__col">
-            <input class="input" type="text" name="railage-from" v-model="railage.from">
+            <vue-dadata3 v-model="railage.from" :token="dadataToken" @on-selected="onSelectFrom" @input="onInputFrom"></vue-dadata3>
           </div>
         </div>
       </fieldset>
-      <div v-if="v$.from.$errors.length" class="form__row form__row--mt-10px">
-        <small class="control-error">Введите пункт отгрузки</small>
+      <div v-if="v$.railageFrom.$errors.length" class="form__row form__row--mt-10px">
+        <small class="control-error">Выберите пункт отгрузки из выпадающего списка адресов</small>
       </div>
     </div>
     <div class="form__row">
       <fieldset class="form__fieldset">
-        <legend class="title--h5">Выберите пункт доставки</legend>
+        <label class="title--h5" for="railage-to">Выберите пункт доставки</label>
         <div class="grid">
           <div class="grid__col">
-            <input class="input" type="text" name="railage-to" v-model="railage.to">
+            <vue-dadata3 v-model="railage.to" :token="dadataToken" @on-selected="onSelectTo" @input="onInputTo"></vue-dadata3>
           </div>
         </div>
       </fieldset>
-      <div v-if="v$.to.$errors.length" class="form__row form__row--mt-10px">
-        <small class="control-error">Введите пункт доставки</small>
+      <div v-if="v$.railageTo.$errors.length" class="form__row form__row--mt-10px">
+        <small class="control-error">Выберите пункт доставки из выпадающего списка адресов</small>
       </div>
     </div>
     <div class="form__row">
       <div class="grid grid--gap-30px">
         <div class="grid__col grid__col--auto">
-          <button type="submit" class="button">Расчитать стоимость перевозки</button>
+          <button type="submit" class="button">Рассчитать стоимость перевозки</button>
         </div>
-        <div v-if="cost" class="grid__col">
-          <div class="title title--h5">
-            Стоимость перевозки: {{cost}} руб.</div>
+        <div v-if="costStr" class="grid__col">
+          <div class="title title--h5">{{costStr}}</div>
         </div>
       </div>
-
     </div>
   </form>
 </template>
@@ -77,7 +77,8 @@
   import urgencyConfig from "@/config/railage.urgency.config"
   import { useVuelidate } from "@vuelidate/core"
   import { required } from "@vuelidate/validators"
-  import RandomMinMax from "@/utils/randomMinMax"
+  import { DaDataNext as VueDadata3 } from 'vue-dadata-3'
+  import calcDistance from "@/utils/calcDistance";
 
   const store = useStore()
   const tariff = ref({})
@@ -90,15 +91,23 @@
     from: "",
     to: "",
   })
-  let cost = ref(0)
-
+  const railageTo = ref(null)
+  const railageFrom = ref(null)
+  const dadataToken = process.env["VUE_APP_DADATA_API_KEY"]
+  let costStr = ref(0)
   const railageRules = {
-    carriage: { required },
-    urgency: { required },
-    from: { required },
-    to: { required },
+    railage: {
+      carriage: { required },
+      urgency: { required },
+    },
+    railageTo: { required },
+    railageFrom: { required },
   }
-  const v$ = useVuelidate(railageRules, railage)
+  const v$ = useVuelidate(railageRules, { railage, railageTo, railageFrom })
+  const onInputTo = (event) => { railageTo.value = null }
+  const onInputFrom = (event) => { railageFrom.value = null }
+  const onSelectTo = (data) => { railageTo.value = data }
+  const onSelectFrom = (data) => { railageFrom.value = data }
 
   onMounted(async () => {
     let validUntil;
@@ -129,9 +138,16 @@
     if (v$.value.$error)
       return
 
-    const distance = RandomMinMax(100, 10000)
+    if (!railageFrom.value && !railageTo.value) {
+      costStr.value = "Во время расчета произошла ошибка. <br> Повторите попытку позже"
+      return
+    }
+
+    let a = {lat: +railageFrom.value.data.geo_lat, lon: +railageFrom.value.data.geo_lon}
+    let b = {lat: +railageTo.value.data.geo_lat, lon: +railageTo.value.data.geo_lon}
+    const distance = calcDistance(a, b)
     const carriageRatio = tariff.value.carriage[railage.carriage]
     const urgencyRatio = tariff.value.urgency[railage.urgency]
-    cost.value = (100 * carriageRatio * urgencyRatio * distance).toFixed(2)
+    costStr.value = `Стоимость перевозки: ${(100 * carriageRatio * urgencyRatio * distance).toFixed(2)} руб.`
   }
 </script>

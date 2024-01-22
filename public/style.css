@@ -1025,6 +1025,7 @@ body.compensate-for-scrollbar {
 /* Styling for Small-Screen Devices */
 
 .title--h1 {
+  display: block;
   font-size: 5rem;
   font-weight: 700;
   line-height: 5rem;
@@ -1034,6 +1035,7 @@ body.compensate-for-scrollbar {
 }
 
 .title--h2 {
+  display: block;
   font-size: 3.5rem;
   font-weight: 400;
   line-height: 3rem;
@@ -1044,6 +1046,7 @@ body.compensate-for-scrollbar {
 }
 
 .title--h3 {
+  display: block;
   font-size: 2.1875rem;
   font-weight: 500;
   line-height: 2.1875rem;
@@ -1053,6 +1056,7 @@ body.compensate-for-scrollbar {
 }
 
 .title--h4 {
+  display: block;
   font-size: 1.5rem;
   font-weight: 700;
   line-height: 1.8rem;
@@ -1062,6 +1066,7 @@ body.compensate-for-scrollbar {
 }
 
 .title--h5 {
+  display: block;
   font-size: 1.125rem;
   font-weight: 700;
   line-height: 1.5rem;
@@ -1071,12 +1076,44 @@ body.compensate-for-scrollbar {
 }
 
 .title--h6 {
+  display: block;
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.4rem;
   color: #767d89;
   margin: 15px 0 10px 0;
   text-align: left;
+}
+
+.form {
+  position: relative;
+}
+
+.form.is-loading:before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  bottom: -10px;
+  right: -10px;
+  z-index: 5;
+  background: rgba(85, 103, 135, 0.25);
+}
+
+.form.is-loading:after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  border: 5px solid #e21a1a;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
 }
 
 .form__fieldset {
@@ -1087,6 +1124,10 @@ body.compensate-for-scrollbar {
 
 .form__row {
   margin-top: 20px;
+}
+
+.form__row:first-child {
+  margin-top: 0;
 }
 
 .form__row--mt-10px {
@@ -1131,6 +1172,11 @@ body.compensate-for-scrollbar {
   text-overflow: ellipsis;
   overflow: hidden;
   transition: border-color 0.5s;
+}
+
+.input:-internal-autofill-selected,
+.textarea:-internal-autofill-selected {
+  background: #fff;
 }
 
 .input:focus-visible,
@@ -1728,6 +1774,16 @@ body.compensate-for-scrollbar {
 .control-error {
   color: #e21a1a;
   font-size: 0.8rem;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media (min-width: 1200px) {

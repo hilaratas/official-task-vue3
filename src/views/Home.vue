@@ -9,10 +9,10 @@
               <!-- Основной контент -->
               <div class="section">
                 <h1 class="title title--h3">Калькулятор стоимости железнодорожных перевозок.</h1>
+                <the-tariff></the-tariff>
+                <br>
                 <railage-form></railage-form>
               </div>
-
-              <the-tariff></the-tariff>
               <!-- Основной контент -->
             </div>
             <!-- /Левая колонка -->
